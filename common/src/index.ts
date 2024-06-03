@@ -1,14 +1,16 @@
 import z from "zod";
 
 export const signupInput = z.object({
+    name: z.string().optional(),
     email: z.string().email(),
     password: z.string(),
-    name: z.string().optional(),
+
 });
 
 export type SignupType = z.infer<typeof signupInput>;
 
 export const signinInput = z.object({
+    name: z.string().optional(),
     email: z.string().email(),
     password: z.string(),
 });
