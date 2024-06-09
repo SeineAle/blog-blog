@@ -11,15 +11,19 @@ export const blogRouter = new Hono<{
     },
     Variables: {
         userId : string;
+		isPublished : string;
     }
 }>();
 
 blogRouter.use('/*', async (c, next) => {
     const header = c.req.header("authorization") || "";
+	const isPublished = c.req.header("publish") || "";
     const response = await verify(header, c.env.JWT_SECRET);
     if(response){
         //@ts-ignore
         c.set("userId", response.id);
+		//@ts-ignore
+        c.set("isPublished", isPublished);
         await next();
     }else{
         c.status(403);
@@ -59,6 +63,8 @@ blogRouter.get('/:id', async (c) => {
 
 blogRouter.post('/', async (c) => {
     const userId = c.get('userId');
+	const isPublishedStr = c.get('isPublished');
+	const isPublished = isPublishedStr === "true";
 	const prisma = new PrismaClient({
 		datasourceUrl: c.env?.DATABASE_URL	,
 	}).$extends(withAccelerate());
@@ -73,7 +79,8 @@ blogRouter.post('/', async (c) => {
 		data: {
 			title: body.title,
 			content: body.content,
-			authorId: userId
+			authorId: userId,
+			published : isPublished,
 		}
 	});
 	return c.json({
